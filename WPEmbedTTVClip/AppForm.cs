@@ -51,112 +51,101 @@ namespace URLConvert
 
         public async void ConvertButton_Click(object sender, EventArgs e)
         {
-            //TODO: CheckIfDomainHasChanged
-            bool isValid = await CheckIfDomainIsValid();
-            if (isValid == true)
+            // Check if the domain is valid
+            if (await CheckIfDomainIsValid() == false)
             {
-                WordpressCodeLabel.Text = "";
-                ConvertButton.Enabled = false;
-                string url = Clipboard.GetText();
-
-                if (CheckIfClipboardIsWPCode(url) == true)
-                {
-                    await DisplayErrorMessage(ErrorMessageWPCodeDuplicate, true);
-                    return;
-                };
-
-                AttemptToConvertTwitchURL(url);
+                return;
             }
-            return;     
+
+            WordpressCodeLabel.Text = "";
+            ConvertButton.Enabled = false;
+
+            // Get the text from the clipboard
+            string url = Clipboard.GetText();
+
+            // Check if the clipboard text is already WordPress code
+            if (CheckIfClipboardIsWPCode(url))
+            {
+                await DisplayErrorMessage(ErrorMessageWPCodeDuplicate, true);
+                return;
+            }
+
+            // Attempt to convert the Twitch URL
+            AttemptToConvertTwitchURL(url);
         }
 
         public bool CheckIfClipboardIsWPCode(string clipboard)
         {
-            //return !clipboard.StartsWith("<br>");
-
-            if (string.IsNullOrEmpty(wordpressCode))
-            {
-                return false;   
-            }
-            else if ( clipboard == wordpressCode)
-            {
-                return true;
-            }
-            else
-            {
-                return false;
-            }
+          return !string.IsNullOrEmpty(clipboard) && clipboard == wordpressCode;
         }
-        
+
         public async Task<bool> CheckIfDomainIsValid()
         {
             string domainURL = DomainTextBox.Text;
+            string rootDomainURL = GetRootDomainURL(domainURL);
 
-            if (domainURL.StartsWith("www."))
+            if (Uri.CheckHostName(rootDomainURL) == UriHostNameType.Unknown)
             {
-                if (domainURL.Contains('/'))
-                {
-                    string rootDomainURL = domainURL.Substring(0, domainURL.LastIndexOf("/"));
-
-                    DomainTextBox.Text = rootDomainURL;
-                }
+                await DisplayErrorMessage(ErrorMessageNotValidDomain, false);
+                return false;
             }
-            else if (domainURL.StartsWith("http"))
-            {
-                string noProtcolDomainURL = domainURL.Substring(domainURL.IndexOf("w"));
 
-                if (noProtcolDomainURL.Contains("/"))
-                {
-                    string rootDomainURL = noProtcolDomainURL.Substring(0, noProtcolDomainURL.LastIndexOf("/"));
-                    DomainTextBox.Text = rootDomainURL;
-                }
-
-                DomainTextBox.Text = noProtcolDomainURL;
-            }
-            else if (!domainURL.StartsWith("www.")) //TODO: Check if URL is valid 
-            {
-                string wwwAddedDomainURL = "www." + domainURL;
-                if (Uri.CheckHostName(wwwAddedDomainURL) == UriHostNameType.Unknown)
-                {
-                    await DisplayErrorMessage(ErrorMessageNotValidDomain, false);
-                    return false;
-                }               
-
-                DomainTextBox.Text = wwwAddedDomainURL;
-            }
-           
+            DomainTextBox.Text = rootDomainURL;
             SaveFieldValuesToSettings();
             return true;
         }
 
-        public async Task AttemptToConvertTwitchURL(string url)
+        private string GetRootDomainURL(string domainURL)
         {
-            string twitchURL = url;
-            string trimmedTwitchURL;            
-
-            if (twitchURL.Contains("https://clips.twitch.tv/") || 
-                (twitchURL.Contains("https://www.twitch.tv/") && twitchURL.Contains("/clip/")))
+            if (domainURL.StartsWith("www."))
             {
-                trimmedTwitchURL = twitchURL.Substring(twitchURL.LastIndexOf("/") + 1);
-                if (trimmedTwitchURL.Contains('?'))
-                {
-                   trimmedTwitchURL = trimmedTwitchURL.Substring(0, trimmedTwitchURL.IndexOf("?"));
-                }
+                return domainURL.Substring(0, domainURL.LastIndexOf("/"));
+            }
+            else if (domainURL.StartsWith("http"))
+            {
+                string noProtocolDomainURL = domainURL.Substring(domainURL.IndexOf("w"));
+                return noProtocolDomainURL.Substring(0, noProtocolDomainURL.LastIndexOf("/"));
             }
             else
+            {
+                return "www." + domainURL;
+            }
+        }
+
+        public async Task AttemptToConvertTwitchURL(string url)
+        {
+            if (!IsValidTwitchURL(url))
             {
                 await DisplayErrorMessage(ErrorMessageNotTwitchURL, true);
                 return;
             }
 
+            string trimmedTwitchURL = TrimTwitchURL(url);
             wordpressCode = BuildWordpressCode(trimmedTwitchURL);
-
             DisplayWordpressCode(wordpressCode);
+        }
+
+        private bool IsValidTwitchURL(string url)
+        {
+            return url.Contains("https://clips.twitch.tv/") ||
+                  (url.Contains("https://www.twitch.tv/") && url.Contains("/clip/"));
+        }
+
+        private string TrimTwitchURL(string url)
+        {
+            string trimmedURL = url.Substring(url.LastIndexOf("/") + 1);
+            int indexOfQuestionMark = trimmedURL.IndexOf("?");
+            if (indexOfQuestionMark >= 0)
+            {
+                trimmedURL = trimmedURL.Substring(0, indexOfQuestionMark);
+            }
+
+            return trimmedURL;
         }
 
         public string BuildWordpressCode(string url)
         {
-            return 
+            return
                 $"<pre class=\"wp-block-code\"><div id=\"iframe-wrapper\" align=\"center\">" +
                 $"<iframe src=\"https://clips.twitch.tv/embed?clip=" +
                 $"{url}&amp;parent={DomainTextBox.Text}\" " +
@@ -177,7 +166,7 @@ namespace URLConvert
         {
             StatusLabel.ForeColor = Color.Red;
             StatusLabel.Text = errorMessage;
-            if ( showClipboard == true ) 
+            if (showClipboard)
             {
                 WordpressCodeLabel.Text = Clipboard.GetText();
             }
@@ -188,22 +177,12 @@ namespace URLConvert
             ConvertButton.Enabled = true;
         }
 
-        public async void VideoHeightTextBox_KeyPress(object sender, KeyPressEventArgs e)
-        {
-            if (!char.IsDigit(e.KeyChar))
-            { 
-                e.Handled = true;
-                await DisplayErrorMessage("Numeric values only", false);
-            }
-            if (e.KeyChar == (char)8) e.Handled = false; // Allows backspacing
-        }
-
-        public async void VideoWidthTextBox_KeyPress(object sender, KeyPressEventArgs e)
+        public async void VideoDimensionTextBox_KeyPress(object sender, KeyPressEventArgs e)
         {
             if (!char.IsDigit(e.KeyChar))
             {
                 e.Handled = true;
-                await DisplayErrorMessage("Numeric values only", false);
+                await DisplayErrorMessage(errorMessage, false);
             }
             if (e.KeyChar == (char)8) e.Handled = false; // Allows backspacing
         }
