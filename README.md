@@ -7,3 +7,4 @@ so I made this tiny tool that took lots of hours to make but it does the job of 
 This is my first *published* application since learning C# in November 2022 so I am sure there is plenty of code tidbits<br>
 that could be written more efficiently or something about regex BUT I DO NOT CARE. It works. I am proud of it. :tada:
 
+![image](https://user-images.githubusercontent.com/116725056/217362100-511c5977-776f-4935-9a3b-afed2a61f380.png)
