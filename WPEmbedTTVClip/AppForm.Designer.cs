@@ -33,11 +33,14 @@
             this.WordpressCodeLabel = new System.Windows.Forms.Label();
             this.StatusLabel = new System.Windows.Forms.Label();
             this.DomainTextBox = new System.Windows.Forms.TextBox();
-            this.VideoHeightTextBox = new System.Windows.Forms.TextBox();
-            this.VideoWidthTextBox = new System.Windows.Forms.TextBox();
             this.DomainLabel = new System.Windows.Forms.Label();
             this.HeightLabel = new System.Windows.Forms.Label();
             this.WidthLabel = new System.Windows.Forms.Label();
+            this.HowToLabel = new System.Windows.Forms.Label();
+            this.VideoWidthBox = new System.Windows.Forms.NumericUpDown();
+            this.VideoHeightBox = new System.Windows.Forms.NumericUpDown();
+            ((System.ComponentModel.ISupportInitialize)(this.VideoWidthBox)).BeginInit();
+            ((System.ComponentModel.ISupportInitialize)(this.VideoHeightBox)).BeginInit();
             this.SuspendLayout();
             // 
             // ConvertButton
@@ -57,47 +60,30 @@
             this.WordpressCodeLabel.Name = "WordpressCodeLabel";
             this.WordpressCodeLabel.Size = new System.Drawing.Size(325, 109);
             this.WordpressCodeLabel.TabIndex = 4;
-            this.WordpressCodeLabel.TextAlign = System.Drawing.ContentAlignment.TopCenter;
             // 
             // StatusLabel
             // 
             this.StatusLabel.Anchor = System.Windows.Forms.AnchorStyles.Top;
             this.StatusLabel.Font = new System.Drawing.Font("Segoe UI", 10F, System.Drawing.FontStyle.Regular, System.Drawing.GraphicsUnit.Point);
+            this.StatusLabel.ForeColor = System.Drawing.Color.Green;
             this.StatusLabel.Location = new System.Drawing.Point(11, 103);
             this.StatusLabel.Name = "StatusLabel";
             this.StatusLabel.Size = new System.Drawing.Size(326, 23);
             this.StatusLabel.TabIndex = 5;
-            this.StatusLabel.Text = "Ready To Convert Clipboard Link";
             this.StatusLabel.TextAlign = System.Drawing.ContentAlignment.TopCenter;
             // 
             // DomainTextBox
             // 
-            this.DomainTextBox.Location = new System.Drawing.Point(35, 30);
+            this.DomainTextBox.Location = new System.Drawing.Point(12, 30);
             this.DomainTextBox.Name = "DomainTextBox";
-            this.DomainTextBox.Size = new System.Drawing.Size(131, 23);
+            this.DomainTextBox.Size = new System.Drawing.Size(182, 23);
             this.DomainTextBox.TabIndex = 6;
-            // 
-            // VideoHeightTextBox
-            // 
-            this.VideoHeightTextBox.Location = new System.Drawing.Point(263, 30);
-            this.VideoHeightTextBox.Name = "VideoHeightTextBox";
-            this.VideoHeightTextBox.Size = new System.Drawing.Size(54, 23);
-            this.VideoHeightTextBox.TabIndex = 8;
-            this.VideoHeightTextBox.KeyPress += new System.Windows.Forms.KeyPressEventHandler(this.VideoHeightTextBox_KeyPress);
-            // 
-            // VideoWidthTextBox
-            // 
-            this.VideoWidthTextBox.Location = new System.Drawing.Point(200, 30);
-            this.VideoWidthTextBox.Name = "VideoWidthTextBox";
-            this.VideoWidthTextBox.Size = new System.Drawing.Size(54, 23);
-            this.VideoWidthTextBox.TabIndex = 7;
-            this.VideoWidthTextBox.KeyPress += new System.Windows.Forms.KeyPressEventHandler(this.VideoWidthTextBox_KeyPress);
             // 
             // DomainLabel
             // 
             this.DomainLabel.AutoSize = true;
             this.DomainLabel.Font = new System.Drawing.Font("Segoe UI", 10F, System.Drawing.FontStyle.Regular, System.Drawing.GraphicsUnit.Point);
-            this.DomainLabel.Location = new System.Drawing.Point(73, 8);
+            this.DomainLabel.Location = new System.Drawing.Point(8, 8);
             this.DomainLabel.Name = "DomainLabel";
             this.DomainLabel.Size = new System.Drawing.Size(57, 19);
             this.DomainLabel.TabIndex = 9;
@@ -107,7 +93,7 @@
             // 
             this.HeightLabel.AutoSize = true;
             this.HeightLabel.Font = new System.Drawing.Font("Segoe UI", 10F, System.Drawing.FontStyle.Regular, System.Drawing.GraphicsUnit.Point);
-            this.HeightLabel.Location = new System.Drawing.Point(265, 9);
+            this.HeightLabel.Location = new System.Drawing.Point(274, 9);
             this.HeightLabel.Name = "HeightLabel";
             this.HeightLabel.Size = new System.Drawing.Size(50, 19);
             this.HeightLabel.TabIndex = 10;
@@ -117,22 +103,57 @@
             // 
             this.WidthLabel.AutoSize = true;
             this.WidthLabel.Font = new System.Drawing.Font("Segoe UI", 10F, System.Drawing.FontStyle.Regular, System.Drawing.GraphicsUnit.Point);
-            this.WidthLabel.Location = new System.Drawing.Point(204, 9);
+            this.WidthLabel.Location = new System.Drawing.Point(211, 9);
             this.WidthLabel.Name = "WidthLabel";
             this.WidthLabel.Size = new System.Drawing.Size(46, 19);
             this.WidthLabel.TabIndex = 11;
             this.WidthLabel.Text = "Width";
+            // 
+            // HowToLabel
+            // 
+            this.HowToLabel.Font = new System.Drawing.Font("Segoe UI", 10F, System.Drawing.FontStyle.Regular, System.Drawing.GraphicsUnit.Point);
+            this.HowToLabel.Location = new System.Drawing.Point(11, 126);
+            this.HowToLabel.Name = "HowToLabel";
+            this.HowToLabel.Size = new System.Drawing.Size(325, 109);
+            this.HowToLabel.TabIndex = 12;
+            // 
+            // VideoWidthBox
+            // 
+            this.VideoWidthBox.Location = new System.Drawing.Point(213, 30);
+            this.VideoWidthBox.Maximum = new decimal(new int[] {
+            9999,
+            0,
+            0,
+            0});
+            this.VideoWidthBox.Name = "VideoWidthBox";
+            this.VideoWidthBox.Size = new System.Drawing.Size(59, 23);
+            this.VideoWidthBox.TabIndex = 13;
+            this.VideoWidthBox.ValueChanged += new System.EventHandler(this.VideoWidthTextBox_TextChanged);
+            // 
+            // VideoHeightBox
+            // 
+            this.VideoHeightBox.Location = new System.Drawing.Point(276, 30);
+            this.VideoHeightBox.Maximum = new decimal(new int[] {
+            9999,
+            0,
+            0,
+            0});
+            this.VideoHeightBox.Name = "VideoHeightBox";
+            this.VideoHeightBox.Size = new System.Drawing.Size(59, 23);
+            this.VideoHeightBox.TabIndex = 14;
+            this.VideoHeightBox.ValueChanged += new System.EventHandler(this.VideoHeightTextBox_TextChanged);
             // 
             // AppForm
             // 
             this.AutoScaleDimensions = new System.Drawing.SizeF(7F, 15F);
             this.AutoScaleMode = System.Windows.Forms.AutoScaleMode.Font;
             this.ClientSize = new System.Drawing.Size(350, 237);
+            this.Controls.Add(this.VideoHeightBox);
+            this.Controls.Add(this.VideoWidthBox);
+            this.Controls.Add(this.HowToLabel);
             this.Controls.Add(this.WidthLabel);
             this.Controls.Add(this.HeightLabel);
             this.Controls.Add(this.DomainLabel);
-            this.Controls.Add(this.VideoWidthTextBox);
-            this.Controls.Add(this.VideoHeightTextBox);
             this.Controls.Add(this.DomainTextBox);
             this.Controls.Add(this.StatusLabel);
             this.Controls.Add(this.WordpressCodeLabel);
@@ -142,6 +163,8 @@
             this.MinimizeBox = false;
             this.Name = "AppForm";
             this.Text = "WP Embed TTV Clip";
+            ((System.ComponentModel.ISupportInitialize)(this.VideoWidthBox)).EndInit();
+            ((System.ComponentModel.ISupportInitialize)(this.VideoHeightBox)).EndInit();
             this.ResumeLayout(false);
             this.PerformLayout();
 
@@ -152,10 +175,11 @@
         private Label WordpressCodeLabel;
         private Label StatusLabel;
         private TextBox DomainTextBox;
-        private TextBox VideoHeightTextBox;
-        private TextBox VideoWidthTextBox;
         private Label DomainLabel;
         private Label HeightLabel;
         private Label WidthLabel;
+        private Label HowToLabel;
+        private NumericUpDown VideoWidthBox;
+        private NumericUpDown VideoHeightBox;
     }
 }

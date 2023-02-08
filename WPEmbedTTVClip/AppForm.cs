@@ -1,216 +1,251 @@
-using System;
-using System.Data;
-using System.Net;
-using System.Reflection.Metadata.Ecma335;
-using System.Runtime.CompilerServices;
-using System.Security.Policy;
+﻿using System.Text;
 using WPEmbedClipCode;
+namespace URLConvert;
 
-namespace URLConvert
+public partial class AppForm : Form
 {
-    public partial class AppForm : Form
+    // == ⚫ FIELDS & PROPERTIES == //
+
+    string WordPressCode = "";
+    const string WPCodeDuplicate_ErrorMessage = "Wordpress Code already copied to clipboard";
+    const string NotTwitchURL_ErrorMessage = "Not a proper Twitch clip URL";
+    const string NotValidDomain_ErrorMessage = "Not a valid Domain";
+    const string ReadyStatus_Message = "Ready to convert Twitch Link in clipboard";
+    const string CompletedStatus_Message = "Success! WP code copied to clipboard";
+    const string HowTo_Message = "1. Set your site domain (ex: https://www.name.com)\n" +
+                          "2. Set desired video width and height\n" +
+                          "3. Copy Twitch Link to clipboard\n" +
+                          "4. Click convert button\n" +
+                          "5. WP embed code will be copied to clipboard";
+
+    // == ⚪ APP START UP & SHUT DOWN == //
+    public AppForm()
     {
-        string DomainURL;
-        int VideoHeight;
-        int VideoWidth;
-        string wordpressCode = "";
-        string ErrorMessageWPCodeDuplicate = "Wordpress Code already copied to clipboard";
-        string ErrorMessageNotTwitchURL = "Not a proper Twitch clip URL";
-        string ErrorMessageNotValidDomain = "Not a valid Domain";
+        InitializeComponent();
+        InitializeAppForm();
+    }
 
-        public AppForm()
+    public void InitializeAppForm()
+    {
+        DomainTextBox.Text = Settings.Default.Domain;
+        VideoHeightBox.Value = Settings.Default.VideoHeight;
+        VideoWidthBox.Value = Settings.Default.VideoWidth;
+        StatusLabel.Text = ReadyStatus_Message;
+        HowToLabel.Text = HowTo_Message;
+        VideoWidthBox.Controls[0].Hide();
+        VideoHeightBox.Controls[0].Hide();
+
+        FormClosing += AppFormClosingEventHandler;
+    }
+
+    public void AppFormClosingEventHandler(object sender, FormClosingEventArgs e)
+    {
+        SaveFieldValuesToSettings();
+        Settings.Default.Save();
+
+        //TODO: If domain is not valid, do not save? Close? Something
+    }
+
+    public void SaveFieldValuesToSettings()
+    {
+        Settings.Default.Domain = DomainTextBox.Text;
+        Settings.Default.VideoHeight = VideoHeightBox.Value;
+        Settings.Default.VideoWidth = VideoWidthBox.Value;
+    }
+
+    // == ⚫ VIDEO DIMENSION FIELDS == //
+
+    private void VideoWidthTextBox_TextChanged(object sender, EventArgs e)
+    {
+        Decimal videoWidth = VideoWidthBox.Value;
+        VideoHeightBox.Value = Decimal.Round(videoWidth / (16m / 9m));
+
+    }
+
+    private void VideoHeightTextBox_TextChanged(object sender, EventArgs e)
+    {
+        Decimal videoHeight = VideoHeightBox.Value;
+        VideoWidthBox.Value = Decimal.Round(videoHeight * (16m / 9m));
+    }
+
+    // == ⚪ CONVERT BUTTON & METHODS == //
+
+    public async void ConvertButton_Click(object sender, EventArgs e)
+    {
+        if (DomainTextBox.Text != Settings.Default.Domain)
         {
-            InitializeComponent();
-            InitializeAppForm();
+            bool isValid = await CheckIsDomainValid();
+            if (isValid == false) return;
+        }    
+
+        WordpressCodeLabel.Text = "";
+        HowToLabel.Visible = false;
+        ConvertButton.Enabled = false;
+
+        string clipboardText = Clipboard.GetText();
+
+        if (CheckIsClipboardWPCode(clipboardText) == true)
+        {
+            await DisplayErrorMessage(WPCodeDuplicate_ErrorMessage, true);
+            return;
+        };
+
+        ConvertTwitchURL(clipboardText);       
+    }
+
+    public bool CheckIsClipboardWPCode(string clipboard)
+    {
+        if (clipboard == WordPressCode)
+        {
+            return true;
         }
+        return false;
+    }
+    
+    public async Task<bool> CheckIsDomainValid()
+    {
+        string domain = DomainTextBox.Text;
+        string updatedDomain;
 
-        public void InitializeAppForm()
+        if (domain.StartsWith("www."))
         {
-            DomainTextBox.Text = Settings.Default.Domain;
-            VideoHeightTextBox.Text = Settings.Default.VideoHeight;
-            VideoWidthTextBox.Text = Settings.Default.VideoWidth;
-
-            FormClosing += AppFormClosingEventHandler;
+            updatedDomain = "https://" + domain;
+            updatedDomain = RemoveURLPath(updatedDomain);
         }
-
-        public void AppFormClosingEventHandler(object sender, FormClosingEventArgs e)
+        else if (domain.StartsWith("http") && !domain.StartsWith("https"))
         {
-            SaveFieldValuesToSettings();
-            Settings.Default.Save();
-
-            //TODO: If domain is not valid, do not save? Close? Something
+            updatedDomain = domain.Insert(4, "s");
+            updatedDomain = RemoveURLPath(updatedDomain);
         }
-
-        public void SaveFieldValuesToSettings()
+        else if (!domain.StartsWith("https://www."))
         {
-            Settings.Default.Domain = DomainTextBox.Text;
-            Settings.Default.VideoHeight = VideoHeightTextBox.Text;
-            Settings.Default.VideoWidth = VideoWidthTextBox.Text;
+            updatedDomain = "https://www." + domain;
+            updatedDomain = RemoveURLPath(updatedDomain);
         }
-
-        public async void ConvertButton_Click(object sender, EventArgs e)
+        else
         {
-            //TODO: CheckIfDomainHasChanged
-            bool isValid = await CheckIfDomainIsValid();
-            if (isValid == true)
+            updatedDomain = RemoveURLPath(domain);
+        }
+        
+        DomainTextBox.Text = updatedDomain;
+
+        bool isValid = await CheckIsValidDomainURL(updatedDomain);
+        if (isValid == false)
+        {
+            return false;
+        }
+        
+        SaveFieldValuesToSettings();
+        return true;
+    }
+
+    public string RemoveURLPath(string domain)
+    {
+        int indexOfLastSlash = domain.LastIndexOf("/");
+
+        if (domain.Contains("/") && indexOfLastSlash > 8)
+        {
+            return domain.Substring(0, indexOfLastSlash);
+        }
+        else
+        {
+            return domain;
+        }
+    }
+
+    public async Task<bool> CheckIsValidDomainURL(string domain)
+    {     
+        HttpClient client = new HttpClient();
+        HttpResponseMessage response;
+        try
+        {
+            response = await client.GetAsync(domain);
+            if (response.IsSuccessStatusCode)
             {
-                WordpressCodeLabel.Text = "";
-                ConvertButton.Enabled = false;
-                string url = Clipboard.GetText();
-
-                if (CheckIfClipboardIsWPCode(url) == true)
-                {
-                    await DisplayErrorMessage(ErrorMessageWPCodeDuplicate, true);
-                    return;
-                };
-
-                AttemptToConvertTwitchURL(url);
-            }
-            return;     
-        }
-
-        public bool CheckIfClipboardIsWPCode(string clipboard)
-        {
-            //return !clipboard.StartsWith("<br>");
-
-            if (string.IsNullOrEmpty(wordpressCode))
-            {
-                return false;   
-            }
-            else if ( clipboard == wordpressCode)
-            {
+                client.Dispose();
                 return true;
             }
             else
             {
+                await DisplayErrorMessage(NotValidDomain_ErrorMessage, false);
                 return false;
             }
         }
-        
-        public async Task<bool> CheckIfDomainIsValid()
+        catch
         {
-            string domainURL = DomainTextBox.Text;
-
-            if (domainURL.StartsWith("www."))
-            {
-                if (domainURL.Contains('/'))
-                {
-                    string rootDomainURL = domainURL.Substring(0, domainURL.LastIndexOf("/"));
-
-                    DomainTextBox.Text = rootDomainURL;
-                }
-            }
-            else if (domainURL.StartsWith("http"))
-            {
-                string noProtcolDomainURL = domainURL.Substring(domainURL.IndexOf("w"));
-
-                if (noProtcolDomainURL.Contains("/"))
-                {
-                    string rootDomainURL = noProtcolDomainURL.Substring(0, noProtcolDomainURL.LastIndexOf("/"));
-                    DomainTextBox.Text = rootDomainURL;
-                }
-
-                DomainTextBox.Text = noProtcolDomainURL;
-            }
-            else //TODO: Check if URL is valid 
-            {
-                string wwwAddedDomainURL = "www." + domainURL;
-                if (Uri.CheckHostName(wwwAddedDomainURL) == UriHostNameType.Unknown)
-                {
-                    await DisplayErrorMessage(ErrorMessageNotValidDomain, false);
-                    return false;
-                }               
-
-                DomainTextBox.Text = wwwAddedDomainURL;
-            }
-           
-            SaveFieldValuesToSettings();
-            return true;
+            await DisplayErrorMessage(NotValidDomain_ErrorMessage, false);
+            return false;
         }
+    }  
 
-        public async Task AttemptToConvertTwitchURL(string url)
+    public async Task ConvertTwitchURL(string url)
+    {
+        string twitchURL = url;
+        string trimmedTwitchURL;            
+
+        if (twitchURL.Contains("https://clips.twitch.tv/") || 
+            (twitchURL.Contains("https://www.twitch.tv/") && twitchURL.Contains("/clip/")))
         {
-            string twitchURL = url;
-            string trimmedTwitchURL;            
-
-            if (twitchURL.Contains("https://clips.twitch.tv/") || 
-                (twitchURL.Contains("https://www.twitch.tv/") && twitchURL.Contains("/clip/")))
+            trimmedTwitchURL = twitchURL.Substring(twitchURL.LastIndexOf("/") + 1);
+            if (trimmedTwitchURL.Contains('?'))
             {
-                trimmedTwitchURL = twitchURL.Substring(twitchURL.LastIndexOf("/") + 1);
-                if (trimmedTwitchURL.Contains('?'))
-                {
-                   trimmedTwitchURL = trimmedTwitchURL.Substring(0, trimmedTwitchURL.IndexOf("?"));
-                }
-            }
-            else
-            {
-                await DisplayErrorMessage(ErrorMessageNotTwitchURL, true);
-                return;
-            }
-
-            wordpressCode = BuildWordpressCode(trimmedTwitchURL);
-
-            DisplayWordpressCode(wordpressCode);
-        }
-
-        public string BuildWordpressCode(string url)
-        {
-            return 
-                $"<pre class=\"wp-block-code\"><div id=\"iframe-wrapper\" align=\"center\">" +
-                $"<iframe src=\"https://clips.twitch.tv/embed?clip=" +
-                $"{url}&amp;parent={DomainTextBox.Text}\" " +
-                $"allowfullscreen=\"true\" scrolling=\"no\" width=\"{VideoWidthTextBox.Text}\" height=\"{VideoHeightTextBox.Text}\" " +
-                $"frameborder=\"0\"></iframe></div></pre>";
-        }
-
-        public void DisplayWordpressCode(string code)
-        {
-            StatusLabel.Text = "Conversion Completed";
-            StatusLabel.ForeColor = Color.Green;
-            WordpressCodeLabel.Text = code;
-            Clipboard.SetText(code);
-            ConvertButton.Enabled = true;
-        }
-
-        public async Task DisplayErrorMessage(string errorMessage, bool showClipboard)
-        {
-            StatusLabel.ForeColor = Color.Red;
-            StatusLabel.Text = errorMessage;
-            if ( showClipboard == true ) 
-            {
-                WordpressCodeLabel.Text = Clipboard.GetText();
-            }
-            await Task.Delay(2500);
-            WordpressCodeLabel.Text = "";
-            StatusLabel.Text = "Ready to Convert";
-            StatusLabel.ForeColor = Color.Black;
-            ConvertButton.Enabled = true;
-        }
-
-        public async void VideoHeightTextBox_KeyPress(object sender, KeyPressEventArgs e)
-        {
-            CheckHeightWidthIsNumber(e);
-        }
-
-        public async void VideoWidthTextBox_KeyPress(object sender, KeyPressEventArgs e)
-        {
-            CheckHeightWidthIsNumber(e);
-        }
-
-        public async void CheckHeightWidthIsNumber(KeyPressEventArgs e)
-        {
-            if (char.IsDigit(e.KeyChar) == false)
-            {
-                if (e.KeyChar == (char)Keys.Back)
-                {
-                    e.Handled = false;
-                }
-                else
-                {
-                    e.Handled = true;
-                    await DisplayErrorMessage("Numeric values only", false);
-                }
+               trimmedTwitchURL = trimmedTwitchURL.Substring(0, trimmedTwitchURL.IndexOf("?"));
             }
         }
+        else
+        {
+            await DisplayErrorMessage(NotTwitchURL_ErrorMessage, true);
+            return;
+        }
+
+        WordPressCode = BuildWordpressCode(trimmedTwitchURL);
+
+        DisplayWordpressCode(WordPressCode);
+    }
+
+    public string BuildWordpressCode(string url)
+    {
+        return 
+            $"<pre class=\"wp-block-code\"><center><div id=\"iframe-wrapper\">" +
+            $"<iframe src=\"https://clips.twitch.tv/embed?clip=" +
+            $"{url}&amp;parent={DomainTextBox.Text}\" " +
+            $"allowfullscreen=\"true\" scrolling=\"no\" width=\"{VideoWidthBox.Value}\" height=\"{VideoHeightBox.Value}\" " +
+            $"frameborder=\"0\"></iframe></div></center></pre>";
+    }
+
+    public void DisplayWordpressCode(string code)
+    {
+        StatusLabel.Text = CompletedStatus_Message;
+        WordpressCodeLabel.Text = code;
+        Clipboard.SetText(code);
+        ConvertButton.Enabled = true;
+    }
+
+    public async Task DisplayErrorMessage(string errorMessage, bool showClipboard)
+    {
+        StatusLabel.ForeColor = Color.Red;
+        StatusLabel.Text = errorMessage;
+        if ( errorMessage == NotValidDomain_ErrorMessage)
+        {
+            DomainLabel.ForeColor= Color.Red;
+            DomainTextBox.BackColor= Color.Red;
+        }    
+        if ( showClipboard == true ) 
+        {
+            WordpressCodeLabel.Text = "Attempted to convert: " + Clipboard.GetText();
+        }
+        await Task.Delay(2500);
+        ResetUIValues();
+    }
+
+    public void ResetUIValues()
+    {
+        WordpressCodeLabel.Text = "";
+        StatusLabel.ForeColor = Color.Green;
+        StatusLabel.Text = ReadyStatus_Message;
+        DomainLabel.ForeColor = Color.Black;
+        DomainTextBox.BackColor = Color.White;
+        HowToLabel.Visible = true;
+        ConvertButton.Enabled = true;
     }
 }

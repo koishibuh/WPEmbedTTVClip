@@ -3,13 +3,13 @@
   <Profiles />
   <Settings>
     <Setting Name="Domain" Type="System.String" Scope="User">
-      <Value Profile="(Default)">test</Value>
+      <Value Profile="(Default)">Input Domain</Value>
     </Setting>
-    <Setting Name="VideoHeight" Type="System.String" Scope="User">
-      <Value Profile="(Default)">0</Value>
+    <Setting Name="VideoHeight" Type="System.Decimal" Scope="User">
+      <Value Profile="(Default)">1080</Value>
     </Setting>
-    <Setting Name="VideoWidth" Type="System.String" Scope="User">
-      <Value Profile="(Default)">0</Value>
+    <Setting Name="VideoWidth" Type="System.Decimal" Scope="User">
+      <Value Profile="(Default)">1920</Value>
     </Setting>
   </Settings>
 </SettingsFile>

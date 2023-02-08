@@ -25,7 +25,7 @@ namespace WPEmbedClipCode {
         
         [global::System.Configuration.UserScopedSettingAttribute()]
         [global::System.Diagnostics.DebuggerNonUserCodeAttribute()]
-        [global::System.Configuration.DefaultSettingValueAttribute("test")]
+        [global::System.Configuration.DefaultSettingValueAttribute("Input Domain")]
         public string Domain {
             get {
                 return ((string)(this["Domain"]));
@@ -37,10 +37,10 @@ namespace WPEmbedClipCode {
         
         [global::System.Configuration.UserScopedSettingAttribute()]
         [global::System.Diagnostics.DebuggerNonUserCodeAttribute()]
-        [global::System.Configuration.DefaultSettingValueAttribute("0")]
-        public string VideoHeight {
+        [global::System.Configuration.DefaultSettingValueAttribute("1080")]
+        public decimal VideoHeight {
             get {
-                return ((string)(this["VideoHeight"]));
+                return ((decimal)(this["VideoHeight"]));
             }
             set {
                 this["VideoHeight"] = value;
@@ -49,10 +49,10 @@ namespace WPEmbedClipCode {
         
         [global::System.Configuration.UserScopedSettingAttribute()]
         [global::System.Diagnostics.DebuggerNonUserCodeAttribute()]
-        [global::System.Configuration.DefaultSettingValueAttribute("0")]
-        public string VideoWidth {
+        [global::System.Configuration.DefaultSettingValueAttribute("1920")]
+        public decimal VideoWidth {
             get {
-                return ((string)(this["VideoWidth"]));
+                return ((decimal)(this["VideoWidth"]));
             }
             set {
                 this["VideoWidth"] = value;
