@@ -2,6 +2,7 @@ using System;
 using System.Data;
 using System.Net;
 using System.Reflection.Metadata.Ecma335;
+using System.Runtime.CompilerServices;
 using System.Security.Policy;
 using WPEmbedClipCode;
 
@@ -34,9 +35,7 @@ namespace URLConvert
 
         public void AppFormClosingEventHandler(object sender, FormClosingEventArgs e)
         {
-            Settings.Default.Domain = DomainTextBox.Text ;
-            Settings.Default.VideoHeight = VideoHeightTextBox.Text;
-            Settings.Default.VideoWidth = VideoWidthTextBox.Text;
+            SaveFieldValuesToSettings();
             Settings.Default.Save();
 
             //TODO: If domain is not valid, do not save? Close? Something
@@ -113,7 +112,7 @@ namespace URLConvert
 
                 DomainTextBox.Text = noProtcolDomainURL;
             }
-            else if (!domainURL.StartsWith("www.")) //TODO: Check if URL is valid 
+            else //TODO: Check if URL is valid 
             {
                 string wwwAddedDomainURL = "www." + domainURL;
                 if (Uri.CheckHostName(wwwAddedDomainURL) == UriHostNameType.Unknown)
@@ -190,22 +189,28 @@ namespace URLConvert
 
         public async void VideoHeightTextBox_KeyPress(object sender, KeyPressEventArgs e)
         {
-            if (!char.IsDigit(e.KeyChar))
-            { 
-                e.Handled = true;
-                await DisplayErrorMessage("Numeric values only", false);
-            }
-            if (e.KeyChar == (char)8) e.Handled = false; // Allows backspacing
+            CheckHeightWidthIsNumber(e);
         }
 
         public async void VideoWidthTextBox_KeyPress(object sender, KeyPressEventArgs e)
         {
-            if (!char.IsDigit(e.KeyChar))
+            CheckHeightWidthIsNumber(e);
+        }
+
+        public async void CheckHeightWidthIsNumber(KeyPressEventArgs e)
+        {
+            if (char.IsDigit(e.KeyChar) == false)
             {
-                e.Handled = true;
-                await DisplayErrorMessage("Numeric values only", false);
+                if (e.KeyChar == (char)Keys.Back)
+                {
+                    e.Handled = false;
+                }
+                else
+                {
+                    e.Handled = true;
+                    await DisplayErrorMessage("Numeric values only", false);
+                }
             }
-            if (e.KeyChar == (char)8) e.Handled = false; // Allows backspacing
         }
     }
 }

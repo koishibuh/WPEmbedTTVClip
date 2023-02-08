@@ -82,7 +82,7 @@
             this.VideoHeightTextBox.Location = new System.Drawing.Point(263, 30);
             this.VideoHeightTextBox.Name = "VideoHeightTextBox";
             this.VideoHeightTextBox.Size = new System.Drawing.Size(54, 23);
-            this.VideoHeightTextBox.TabIndex = 7;
+            this.VideoHeightTextBox.TabIndex = 8;
             this.VideoHeightTextBox.KeyPress += new System.Windows.Forms.KeyPressEventHandler(this.VideoHeightTextBox_KeyPress);
             // 
             // VideoWidthTextBox
@@ -90,7 +90,7 @@
             this.VideoWidthTextBox.Location = new System.Drawing.Point(200, 30);
             this.VideoWidthTextBox.Name = "VideoWidthTextBox";
             this.VideoWidthTextBox.Size = new System.Drawing.Size(54, 23);
-            this.VideoWidthTextBox.TabIndex = 8;
+            this.VideoWidthTextBox.TabIndex = 7;
             this.VideoWidthTextBox.KeyPress += new System.Windows.Forms.KeyPressEventHandler(this.VideoWidthTextBox_KeyPress);
             // 
             // DomainLabel
