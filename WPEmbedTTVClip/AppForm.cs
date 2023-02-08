@@ -205,10 +205,12 @@ public partial class AppForm : Form
 
     public string BuildWordpressCode(string url)
     {
+        string simpleURL = DomainTextBox.Text.Substring(DomainTextBox.Text.LastIndexOf('/') + 1);
+
         return 
             $"<pre class=\"wp-block-code\"><center><div id=\"iframe-wrapper\">" +
             $"<iframe src=\"https://clips.twitch.tv/embed?clip=" +
-            $"{url}&amp;parent={DomainTextBox.Text}\" " +
+            $"{url}&amp;parent={simpleURL}\" " +
             $"allowfullscreen=\"true\" scrolling=\"no\" width=\"{VideoWidthBox.Value}\" height=\"{VideoHeightBox.Value}\" " +
             $"frameborder=\"0\"></iframe></div></center></pre>";
     }
