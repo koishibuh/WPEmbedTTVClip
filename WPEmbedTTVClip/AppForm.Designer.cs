@@ -39,6 +39,7 @@
             this.HowToLabel = new System.Windows.Forms.Label();
             this.VideoWidthBox = new System.Windows.Forms.NumericUpDown();
             this.VideoHeightBox = new System.Windows.Forms.NumericUpDown();
+            this.CopyLastWPCodeButton = new System.Windows.Forms.Button();
             ((System.ComponentModel.ISupportInitialize)(this.VideoWidthBox)).BeginInit();
             ((System.ComponentModel.ISupportInitialize)(this.VideoHeightBox)).BeginInit();
             this.SuspendLayout();
@@ -48,7 +49,7 @@
             this.ConvertButton.Font = new System.Drawing.Font("Segoe UI", 11.25F, System.Drawing.FontStyle.Regular, System.Drawing.GraphicsUnit.Point);
             this.ConvertButton.Location = new System.Drawing.Point(11, 59);
             this.ConvertButton.Name = "ConvertButton";
-            this.ConvertButton.Size = new System.Drawing.Size(326, 41);
+            this.ConvertButton.Size = new System.Drawing.Size(261, 41);
             this.ConvertButton.TabIndex = 3;
             this.ConvertButton.Text = "CONVERT";
             this.ConvertButton.UseVisualStyleBackColor = true;
@@ -60,6 +61,7 @@
             this.WordpressCodeLabel.Name = "WordpressCodeLabel";
             this.WordpressCodeLabel.Size = new System.Drawing.Size(325, 109);
             this.WordpressCodeLabel.TabIndex = 4;
+            this.WordpressCodeLabel.MouseClick += new System.Windows.Forms.MouseEventHandler(this.WordpressCodeLabel_MouseClick);
             // 
             // StatusLabel
             // 
@@ -143,11 +145,24 @@
             this.VideoHeightBox.TabIndex = 14;
             this.VideoHeightBox.ValueChanged += new System.EventHandler(this.VideoHeightTextBox_TextChanged);
             // 
+            // CopyLastWPCodeButton
+            // 
+            this.CopyLastWPCodeButton.Enabled = false;
+            this.CopyLastWPCodeButton.Font = new System.Drawing.Font("Segoe UI", 11.25F, System.Drawing.FontStyle.Regular, System.Drawing.GraphicsUnit.Point);
+            this.CopyLastWPCodeButton.Location = new System.Drawing.Point(274, 59);
+            this.CopyLastWPCodeButton.Name = "CopyLastWPCodeButton";
+            this.CopyLastWPCodeButton.Size = new System.Drawing.Size(63, 41);
+            this.CopyLastWPCodeButton.TabIndex = 15;
+            this.CopyLastWPCodeButton.Text = "COPY";
+            this.CopyLastWPCodeButton.UseVisualStyleBackColor = true;
+            this.CopyLastWPCodeButton.Click += new System.EventHandler(this.CopyLastWPCodeButton_Click);
+            // 
             // AppForm
             // 
             this.AutoScaleDimensions = new System.Drawing.SizeF(7F, 15F);
             this.AutoScaleMode = System.Windows.Forms.AutoScaleMode.Font;
             this.ClientSize = new System.Drawing.Size(350, 237);
+            this.Controls.Add(this.CopyLastWPCodeButton);
             this.Controls.Add(this.VideoHeightBox);
             this.Controls.Add(this.VideoWidthBox);
             this.Controls.Add(this.HowToLabel);
@@ -160,9 +175,11 @@
             this.Controls.Add(this.ConvertButton);
             this.FormBorderStyle = System.Windows.Forms.FormBorderStyle.FixedSingle;
             this.Icon = ((System.Drawing.Icon)(resources.GetObject("$this.Icon")));
+            this.MaximizeBox = false;
             this.MinimizeBox = false;
             this.Name = "AppForm";
             this.Text = "WP Embed TTV Clip";
+            this.TopMost = true;
             ((System.ComponentModel.ISupportInitialize)(this.VideoWidthBox)).EndInit();
             ((System.ComponentModel.ISupportInitialize)(this.VideoHeightBox)).EndInit();
             this.ResumeLayout(false);
@@ -181,5 +198,6 @@
         private Label HowToLabel;
         private NumericUpDown VideoWidthBox;
         private NumericUpDown VideoHeightBox;
+        private Button CopyLastWPCodeButton;
     }
 }

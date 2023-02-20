@@ -1,5 +1,4 @@
-﻿using System.Text;
-using WPEmbedClipCode;
+﻿using WPEmbedClipCode;
 namespace URLConvert;
 
 public partial class AppForm : Form
@@ -12,13 +11,16 @@ public partial class AppForm : Form
     const string NotValidDomain_ErrorMessage = "Not a valid Domain";
     const string ReadyStatus_Message = "Ready to convert Twitch Link in clipboard";
     const string CompletedStatus_Message = "Success! WP code copied to clipboard";
+    const string WPCodeCopiedAgain_Message = "WP code copied to clipboard again";
     const string HowTo_Message = "1. Set your site domain (ex: https://www.name.com)\n" +
                           "2. Set desired video width and height\n" +
                           "3. Copy Twitch Link to clipboard\n" +
                           "4. Click convert button\n" +
                           "5. WP embed code will be copied to clipboard";
 
+
     // == ⚪ APP START UP & SHUT DOWN == //
+
     public AppForm()
     {
         InitializeComponent();
@@ -221,6 +223,7 @@ public partial class AppForm : Form
         WordpressCodeLabel.Text = code;
         Clipboard.SetText(code);
         ConvertButton.Enabled = true;
+        CopyLastWPCodeButton.Enabled = true;
     }
 
     public async Task DisplayErrorMessage(string errorMessage, bool showClipboard)
@@ -249,5 +252,21 @@ public partial class AppForm : Form
         DomainTextBox.BackColor = Color.White;
         HowToLabel.Visible = true;
         ConvertButton.Enabled = true;
+    }
+
+    private void WordpressCodeLabel_MouseClick(object sender, MouseEventArgs e)
+    {
+        Clipboard.SetText(WordPressCode);
+        StatusLabel.Text = WPCodeCopiedAgain_Message;
+    }
+
+    private async void CopyLastWPCodeButton_Click(object sender, EventArgs e)
+    {
+        HowToLabel.Visible = false;
+        Clipboard.SetText(WordPressCode);
+        StatusLabel.Text = WPCodeCopiedAgain_Message;
+        WordpressCodeLabel.Text = WordPressCode;
+        await Task.Delay(2500);
+        ResetUIValues();
     }
 }
